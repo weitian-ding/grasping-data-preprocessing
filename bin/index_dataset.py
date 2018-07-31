@@ -22,12 +22,6 @@ from parsers.gripper_parser import parse_gripper_file
 from parsers.polaris_parser import parse_polaris_file
 
 
-#INPUT_PATH = '../input/data-sample'
-#GRIPPER_DATA_OUTPUT_PATH = '../output'
-#DAILY_ORIGINS_PATH = '../Data Collection - DailyOrigin.csv'
-#LOGGING_FORMAT = '%(asctime)-15s %(clientip)s %(user)-8s %(message)s'
-# MAX_COUNTS = 50 # TODO remove this after debugging
-
 # filetype_name => (extension, a function to extract grasp id from filename)
 filetypes = {'gripper_filepath': ('*displacement', lambda fp: int(path.basename(fp).split('-')[0])),
              'polaris_filepath': ('*.txt', lambda fp: int(path.basename(fp).split('-')[0])),
@@ -161,7 +155,7 @@ if __name__ == '__main__':
 
             # update daily origin
             if args.update_origin:
-                polaris_coord_transformer.object_origin = daily_origins.get_origin_by_date(polaris_ts.to_pydatetime())
+                polaris_coord_transformer.object_origin = daily_origins.get_origin_by_date(polaris_ts[0].to_pydatetime())
 
             # transform polaris coordinates
             polaris_records = [polaris_coord_transformer.transform_single_example(t1, t2)
