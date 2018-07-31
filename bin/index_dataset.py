@@ -59,8 +59,8 @@ def _merge_polaris_gripper(polaris_ts, polaris_records, gripper_motor_interps):
     gripper_motor_records = []
 
     for ts in polaris_ts:
-        ts_microseconds = ts.value
-        gripper_motor_record = np.array([f(ts_microseconds) for f in gripper_motor_interps])
+        ts_value = ts.value
+        gripper_motor_record = np.array([f(ts_value) for f in gripper_motor_interps])
 
         gripper_motor_records.append(gripper_motor_record)
 
@@ -68,8 +68,15 @@ def _merge_polaris_gripper(polaris_ts, polaris_records, gripper_motor_interps):
 
     return pd.DataFrame({
         'timestamp': polaris_ts,
-        'gripper_motor_params': gripper_motor_records.tolist(),
-        'polaris_params': polaris_records.tolist(),
+        'gripper_motor_1': gripper_motor_records[:, 0],
+        'gripper_motor_2': gripper_motor_records[:, 1],
+        'gripper_motor_3': gripper_motor_records[:, 2],
+        'polaris_x': polaris_records[:, 0],
+        'polaris_y': polaris_records[:, 1],
+        'polaris_z': polaris_records[:, 2],
+        'polaris_rx': polaris_records[:, 3],
+        'polaris_ry': polaris_records[:, 4],
+        'polaris_rz': polaris_records[:, 5]
     })
 
 
@@ -78,9 +85,10 @@ def _gripper_motor_records_to_interps(gripper_motor_records):
     gripper_motor_params_interps = []
 
     for ci in range(0, gripper_motor_records.shape[1]):
-        ts_microseconds = np.stack([t.value for t in gripper_ts], axis=0)
+        # convert timestamp to real number values
+        ts_values = np.stack([t.value for t in gripper_ts], axis=0)
         motor_params_ci = gripper_motor_records[:, ci]
-        interp = interp1d(ts_microseconds, motor_params_ci, fill_value='extrapolate', kind='cubic')
+        interp = interp1d(ts_values, motor_params_ci, fill_value='extrapolate', kind='cubic')
 
         gripper_motor_params_interps.append(interp)
 
@@ -89,10 +97,10 @@ def _gripper_motor_records_to_interps(gripper_motor_records):
 
 # save gripper, which contains both gripper motor and polaris records, to disk
 def _save_gripper_data(grasp_id, gripper_df, output_folderpath):
-    gripper_data_filepath = path.join(output_folderpath, 'gripper_data', '%s.json' % grasp_id)
+    gripper_data_filepath = path.join(output_folderpath, 'gripper_data', '%s.csv' % grasp_id)
     if not path.exists(path.dirname(gripper_data_filepath)):
         os.mkdir(path.dirname(gripper_data_filepath))
-    gripper_df.to_json(gripper_data_filepath, orient='records')
+    gripper_df.to_csv(gripper_data_filepath, index=False)
 
     return gripper_data_filepath
 
