@@ -23,8 +23,11 @@ def parse_polaris_file(filepath):
                 tool1_records.append(tool1_record)
                 tool2_records.append(tool2_record)
 
-            except:
+            except ValueError:
                 logging.warning('polaris file %s line %s malformed or not understood', filepath, l)
+                continue
+            except Exception as e:
+                logging.error('unhandled exception %s in processing polaris line %s', e, l)
                 continue
 
     return np.array(timestamps), \

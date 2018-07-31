@@ -50,35 +50,49 @@ def parse_gripper_file(filepath):
     if timestamps is None:
         raise ValueError('time difference is not found in gripper file %s', filepath)
 
-    # fill 0's in motor records via linear interpolation
-    motor_records = np.stack(motor_records, axis=0)
-    motor_records = np.transpose(np.stack([_interpolate_zeros(motor_records[:, i]) for i in range(0, 4)], axis=0))
+    motor_records = np.stack(motor_records, axis=0)  # a nx4 matrix of n motor records
+    # interpolates 0s for 4 columns and re-stack to produces a 4xn matrix
+    motor_records = np.stack([_interpolate_zeros(motor_records[:, ci]) for ci in range(0, 4)],
+                             axis=0)
+    motor_records = np.transpose(motor_records)   # transpose to produce nx4 matrix
 
     # synchronize time with polaris
     timestamps = [(t + time_delta) for t in timestamps]
     timestamps = np.array(timestamps)
 
-    desc = '%s %s' % (grip_desc, status_desc)
+    desc = '{} {}'.format(grip_desc, status_desc)
 
     return timestamps, motor_records, grip_type, desc, is_grip_success
 
 
-# fill zeros in series via linear interpolation using adjacent non-zero elements
-# if there are zeros at head or tail, then the first non-zero and last non-zero value is extended
-# to fill the zeros at head or tail respectively
-def _interpolate_zeros(series):
-    last_non_zero = None
-    conts_zero_counts = 0
-    interpolated = []
 
+def _interpolate_zeros(series):
+    """Fills zeros in series by lienar interpolation
+    fills zeros in series via linear interpolation using adjacent non-zero elements
+       if there are zeros at head or tail, then the first non-zero and last non-zero value is extended
+       to fill the zeros at head or tail respectively
+
+    :param series: an iterable
+    :return: an iterable with zeros filled
+    """
+    last_non_zero = None
+    conts_zero_counts = 0  # counts of continuous zeros
+    interpolated = []  # a new series with zeros interpolated and non-zero elements copied
+
+    # the for loop iterates the series, and fills interpolated
     for v in series:
         if not np.equal(v, 0):
             # this occurs only if series[0] == 0
+            # this ensures the heading zeros are filled with the first non zero element in the series
             if last_non_zero is None:
                 last_non_zero = v
 
-            # last non zero is excluded since it was included in previous extend
-            interpolated.extend(np.linspace(last_non_zero, v, conts_zero_counts + 2)[1:])
+            # interpolates between the previous non zero element, last_non_zero, and current element, v
+            # zeros_interpolated includes both last_non_zero and v
+            zeros_interpolated = np.linspace(last_non_zero, v, conts_zero_counts + 2)
+
+            # extend the interpolated list, last_non_zero is excluded since it was included in previous extend
+            interpolated.extend(zeros_interpolated[1:])
 
             conts_zero_counts = 0
             last_non_zero = v
@@ -88,7 +102,7 @@ def _interpolate_zeros(series):
     if last_non_zero is None:
         raise ValueError('all elements in series is None')
 
-    # there are trailing zeros
+    # fill trailing zeros by the last non zero element in the series
     if conts_zero_counts > 0:
         interpolated.extend([last_non_zero] * conts_zero_counts)
 

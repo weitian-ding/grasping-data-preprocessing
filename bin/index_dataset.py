@@ -1,7 +1,7 @@
 import argparse
 import logging
 import os
-from functools import reduce
+from functools import reduce, partial
 from glob import glob
 from os import path
 from shutil import rmtree
@@ -22,17 +22,19 @@ from parsers.gripper_parser import parse_gripper_file
 from parsers.polaris_parser import parse_polaris_file
 
 
-# filetype_name => (extension, a function to extract grasp id from filename)
-filetypes = {'gripper_filepath': ('*displacement', lambda fp: int(path.basename(fp).split('-')[0])),
-             'polaris_filepath': ('*.txt', lambda fp: int(path.basename(fp).split('-')[0])),
-             'rs_depth_image_filepath': ('*RS_depth.npy', lambda fp: int(path.basename(fp).split('_')[0])),
-             'rs_color_image_filepath': ('*RS_color.npy', lambda fp: int(path.basename(fp).split('_')[0])),
-             'zed_depth_image_filepath': ('*ZED_depth.npy', lambda fp: int(path.basename(fp).split('_')[0])),
-             'zed_color_image_filepath': ('*ZED_color.npy', lambda fp: int(path.basename(fp).split('_')[0]))}
+# extracts grasp id from file path, filename is splitted by split
+def _grasp_id_from_filepath(split, fp):
+    return int(path.basename(fp).split(split)[0])
 
 
 # list all files (gripper files, polaris files, image files, etc) and join them by grasp id
 def _group_files_by_grasp_id(input_folderpath):
+    filetypes = {'gripper_filepath': ('*displacement', partial(_grasp_id_from_filepath, '-')),
+                 'polaris_filepath': ('*.txt', partial(_grasp_id_from_filepath, '-')),
+                 'rs_depth_image_filepath': ('*RS_depth.npy', partial(_grasp_id_from_filepath, '_')),
+                 'rs_color_image_filepath': ('*RS_color.npy', partial(_grasp_id_from_filepath, '_')),
+                 'zed_depth_image_filepath': ('*ZED_depth.npy', partial(_grasp_id_from_filepath, '_')),
+                 'zed_color_image_filepath': ('*ZED_color.npy', partial(_grasp_id_from_filepath, '_'))}
     filepath_dfs = []
 
     for filetype, (ext, extract_grasp_id) in filetypes.items():
@@ -124,7 +126,7 @@ if __name__ == '__main__':
     # setupt file logging
     logging.basicConfig(filename=args.log_filename, filemode='w', level=logging.DEBUG)
 
-    # polaris coordinate transformation
+    # prepare polaris coordinate transformer
     print('prepare polaris coords transformations...')
     polaris_coord_transform_constants = polaris_coord_transform.ndi_transformation(args.transformation_constants_filepath)
     polaris_coord_transformer = polaris_coord_transform.Transformer(polaris_coord_transform_constants)
@@ -134,8 +136,9 @@ if __name__ == '__main__':
         daily_origins = parse_daily_origin(args.daily_origin_filepath)
 
     print('list all grasp data files...')
+    # filetype_name => (extension, a function to extract grasp id from filename)
     filepaths_df = _group_files_by_grasp_id(args.input_folderpath)
-    logging.info(filepaths_df.head())
+    print(filepaths_df.head())
 
     # make output folder, remove if it already exists
     if path.exists(args.output_folderpath):
@@ -147,7 +150,7 @@ if __name__ == '__main__':
     processing_counts = 0
     processed_grasps = []
 
-    for i, r in tqdm(filepaths_df.iterrows()):
+    for r in tqdm(filepaths_df.to_dict('records')):
 
         # only processing a subset, useful for debugging
         if not args.limit_processing is None and processing_counts > args.limit_processing:
