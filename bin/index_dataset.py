@@ -71,6 +71,7 @@ def _merge_polaris_gripper(polaris_ts, polaris_records, gripper_motor_interps):
         'gripper_motor_1': gripper_motor_records[:, 0],
         'gripper_motor_2': gripper_motor_records[:, 1],
         'gripper_motor_3': gripper_motor_records[:, 2],
+        'gripper_motor_4': gripper_motor_records[:, 3],
         'polaris_x': polaris_records[:, 0],
         'polaris_y': polaris_records[:, 1],
         'polaris_z': polaris_records[:, 2],
