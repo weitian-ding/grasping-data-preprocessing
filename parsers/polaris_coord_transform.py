@@ -358,6 +358,8 @@ class Transformer(object):
 
     def transform_single_example(self, tool1_params, tool2_params):
         # select the non-zero recording
+        #    tool1 => tool 339
+        #    tool2 => tool 449
         if (np.any(tool1_params)):
             x, y, z, qr, qi, qj, qk = tool1_params
         else:
@@ -365,7 +367,12 @@ class Transformer(object):
 
         R = rotation_matrix_from_quaternions([qr, qi, qj, qk])
         H = homogenous_transform(R, [x, y, z])
-        H = H.dot(self.st.HT_from449_to_gripper_center)
+
+        if (np.any(tool1_params)):
+            H = H.dot(self.st.HT_from339_to_gripper_center)
+        else:
+            H = H.dot(self.st.HT_from449_to_gripper_center)
+
         H_origin = self.st.Inverse_HT_object.dot(H)
         R_origin = H_origin[0:3,0:3]
 
