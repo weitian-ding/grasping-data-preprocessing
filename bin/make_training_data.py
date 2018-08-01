@@ -38,4 +38,4 @@ if __name__ == '__main__':
 
         parsed_records.append(parsed_record)
 
-    pd.DataFrame(parsed_records).to_csv(path.join(args.output_folderpath, 'grasp_data.csv'), index=None)
+    pd.DataFrame(parsed_records).to_csv(path.join(args.output_folderpath, 'grasp_  data.csv'), index=None)
