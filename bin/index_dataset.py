@@ -38,10 +38,13 @@ def _group_files_by_grasp_id(input_folderpath):
     filepath_dfs = []
 
     for filetype, (ext, extract_grasp_id) in filetypes.items():
-        # equivalent to the recursive version of 'ls *.ext'
-        filepaths = [path.relpath(i, input_folderpath)
-                     for f in os.walk(input_folderpath)
-                     for i in glob(os.path.join(f[0], ext))]
+        # find all filepaths with the same extension
+        filepaths = []
+        for dir in os.walk(input_folderpath):  # recursively walks all directories
+            # find all files with ext in the current directory
+            filepath_wildcard =  path.join(dir[0], ext)
+            filepaths.extend([path.relpath(f, input_folderpath) for f in glob(filepath_wildcard)])
+
         filepath_df = pd.DataFrame({filetype: filepaths})
         filepath_df['grasp_id'] = filepath_df[filetype].map(extract_grasp_id)
 
