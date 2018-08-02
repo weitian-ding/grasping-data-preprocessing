@@ -211,5 +211,5 @@ if __name__ == '__main__':
     # save the index to disk
     pd.DataFrame(processed_grasps).to_csv(path.join(args.output_folderpath, 'index.csv'), index=None)
 
-    print('processing finished, attempted processing %s grasps, successed in %s grasps' %
-          (processing_counts, len(processed_grasps)))
+    print('processing finished, attempted processing {} grasps, successed in {} grasps'
+          .format(processing_counts, len(processed_grasps)))
