@@ -29,6 +29,7 @@ def _grasp_id_from_filepath(split, fp):
 
 # list all files (gripper files, polaris files, image files, etc) and join them by grasp id
 def _group_files_by_grasp_id(input_folderpath):
+    # filetype_name => (extension, a function to extract grasp id from filename)
     filetypes = {'gripper_filepath': ('*displacement', partial(_grasp_id_from_filepath, '-')),
                  'polaris_filepath': ('*.txt', partial(_grasp_id_from_filepath, '-')),
                  'rs_depth_image_filepath': ('*RS_depth.npy', partial(_grasp_id_from_filepath, '_')),
@@ -139,7 +140,6 @@ if __name__ == '__main__':
         daily_origins = parse_daily_origin(args.daily_origin_filepath)
 
     print('list all grasp data files...')
-    # filetype_name => (extension, a function to extract grasp id from filename)
     filepaths_df = _group_files_by_grasp_id(args.input_folderpath)
     print(filepaths_df.head())
 
@@ -170,7 +170,9 @@ if __name__ == '__main__':
 
             # update daily origin
             if args.update_origin:
-                polaris_coord_transformer.object_origin = daily_origins.get_origin_by_date(polaris_ts[0].to_pydatetime())
+                # use the first timestamp in polaris recording as the timestamp of a grasp session
+                session_timestamp = polaris_ts[0]
+                polaris_coord_transformer.object_origin = daily_origins.get_origin_by_session_timestamp(session_timestamp)
 
             # transform polaris coordinates
             polaris_records = [polaris_coord_transformer.transform_single_example(t1, t2)
