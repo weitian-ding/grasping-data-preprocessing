@@ -71,15 +71,13 @@ def _group_files_by_grasp_id(input_folderpath):
 
 # join gripper records and polaris records by timestamp
 def _merge_polaris_gripper(polaris_ts, polaris_records, gripper_motor_interps):
-    gripper_motor_records = []
+    gripper_motor_records = np.zeros(shape=(len(polaris_ts), 4))
 
-    for ts in polaris_ts:
+    for i, ts in enumerate(polaris_ts):
         ts_value = ts.value
         gripper_motor_record = np.array([f(ts_value) for f in gripper_motor_interps])
 
-        gripper_motor_records.append(gripper_motor_record)
-
-    gripper_motor_records = np.stack(gripper_motor_records, axis=0)
+        gripper_motor_records[i] = gripper_motor_record
 
     return pd.DataFrame({
         'timestamp': polaris_ts,
@@ -98,11 +96,12 @@ def _merge_polaris_gripper(polaris_ts, polaris_records, gripper_motor_interps):
 
 # produces spline interpolations with gripper records, i.e. f[i](timestamp) => gripper_motor_params[i]
 def _gripper_motor_records_to_interps(gripper_ts, gripper_motor_records):
+    # a list to hold 4 spline interpolations for 4 gripper motor parameters
     gripper_motor_params_interps = []
 
     for ci in range(0, gripper_motor_records.shape[1]):
         # convert timestamp to real number values, i.e. nanoseconds
-        ts_values = np.stack([t.value for t in gripper_ts], axis=0)
+        ts_values = np.array([t.value for t in gripper_ts])
         motor_params_ci = gripper_motor_records[:, ci]
         interp = interp1d(ts_values, motor_params_ci, fill_value='extrapolate', kind='cubic')
 
