@@ -1,9 +1,14 @@
+from collections import namedtuple
+
 import pandas as pd
 import numpy as np
 
 import logging
 
 SKIP_ROWS = 6
+
+# an encapsulation of parsed polaris file
+ParsedPolarisFile = namedtuple('ParsedPolarisFile', 'timestamps tool1_params tool2_params')
 
 
 # extracts timestamp, polaris tool1 params and polaris tool2 params from polaris file
@@ -30,9 +35,7 @@ def parse_polaris_file(filepath):
                 logging.error('unhandled exception %s in processing polaris line %s', e, l)
                 continue
 
-    return np.array(timestamps), \
-           np.stack(tool1_records, axis=0), \
-           np.stack(tool2_records, axis=0)
+    return ParsedPolarisFile(np.array(timestamps), np.stack(tool1_records, axis=0), np.stack(tool2_records, axis=0))
 
 
 def _parse_polaris_single_record(line):
