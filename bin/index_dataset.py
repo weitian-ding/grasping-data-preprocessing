@@ -165,7 +165,6 @@ if __name__ == '__main__':
         processing_counts += 1
 
         try:
-            # gripper_ts, gripper_motor_records, grip_type, desc, is_grip_success = parse_gripper_file(gripper_fp)
             parsed_gripper_file = parse_gripper_file(gripper_fp)
             parsed_polaris_file = parse_polaris_file(polaris_fp)
 
