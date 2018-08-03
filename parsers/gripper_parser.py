@@ -1,7 +1,13 @@
+from collections import namedtuple
+
 import numpy as np
 import pandas as pd
 
 import logging
+
+# an encapsulation of parsed gripper file
+ParsedGripperFile = namedtuple('ParsedGripperFile', 'timestamps motor_records grip_type desc is_grip_success')
+
 
 # extracts timestamps, motor_records, grip_type, description, success_status from gripper file
 def parse_gripper_file(filepath):
@@ -62,8 +68,7 @@ def parse_gripper_file(filepath):
 
     desc = '{} {}'.format(grip_desc, status_desc)
 
-    return timestamps, motor_records, grip_type, desc, is_grip_success
-
+    return ParsedGripperFile(timestamps, motor_records, grip_type, desc, is_grip_success)
 
 
 def _interpolate_zeros(series):

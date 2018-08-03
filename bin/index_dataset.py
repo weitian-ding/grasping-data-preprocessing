@@ -88,11 +88,11 @@ def _merge_polaris_gripper(polaris_ts, polaris_records, gripper_motor_interps):
 
 
 # produces spline interpolations with gripper records, i.e. f[i](timestamp) => gripper_motor_params[i]
-def _gripper_motor_records_to_interps(gripper_motor_records):
+def _gripper_motor_records_to_interps(gripper_ts, gripper_motor_records):
     gripper_motor_params_interps = []
 
     for ci in range(0, gripper_motor_records.shape[1]):
-        # convert timestamp to real number values
+        # convert timestamp to real number values, i.e. nanoseconds
         ts_values = np.stack([t.value for t in gripper_ts], axis=0)
         motor_params_ci = gripper_motor_records[:, ci]
         interp = interp1d(ts_values, motor_params_ci, fill_value='extrapolate', kind='cubic')
@@ -165,23 +165,25 @@ if __name__ == '__main__':
         processing_counts += 1
 
         try:
-            gripper_ts, gripper_motor_records, grip_type, desc, is_grip_success = parse_gripper_file(gripper_fp)
-            polaris_ts, polaris_tool1_records, polaris_tool2_records = parse_polaris_file(polaris_fp)
+            # gripper_ts, gripper_motor_records, grip_type, desc, is_grip_success = parse_gripper_file(gripper_fp)
+            parsed_gripper_file = parse_gripper_file(gripper_fp)
+            parsed_polaris_file = parse_polaris_file(polaris_fp)
 
             # update daily origin
             if args.update_origin:
                 # use the first timestamp in polaris recording as the timestamp of a grasp session
-                session_timestamp = polaris_ts[0]
+                session_timestamp = parsed_gripper_file.timestamps[0]
                 polaris_coord_transformer.object_origin = daily_origins.get_origin_by_session_timestamp(session_timestamp)
 
             # transform polaris coordinates
             polaris_records = [polaris_coord_transformer.transform_single_example(t1, t2)
-                               for t1, t2 in zip(polaris_tool1_records, polaris_tool2_records)]
+                               for t1, t2 in zip(parsed_polaris_file.tool1_params, parsed_polaris_file.tool2_params)]
             polaris_records = np.array(polaris_records)
 
-            gripper_motor_interps = _gripper_motor_records_to_interps(gripper_motor_records)
+            gripper_motor_interps = _gripper_motor_records_to_interps(parsed_gripper_file.timestamps,
+                                                                      parsed_gripper_file.motor_records)
 
-            polaris_gripper_merged_df = _merge_polaris_gripper(polaris_ts,
+            polaris_gripper_merged_df = _merge_polaris_gripper(parsed_polaris_file.timestamps,
                                                                polaris_records,
                                                                gripper_motor_interps)
 
@@ -189,8 +191,11 @@ if __name__ == '__main__':
                                                        gripper_df=polaris_gripper_merged_df,
                                                        output_folderpath=args.output_folderpath)
 
+        except ValueError as e:
+            logging.warning('%s processing record %s, probably something wrong in coordinate transformation', e, r)
+            continue
         except Exception as e:
-            logging.warning('error processing record %s with exception %s', r, e)
+            logging.warning('unhandled exception %s processing record %s', e, r)
             continue
 
         # writes into index only if file processing is successful
@@ -201,9 +206,9 @@ if __name__ == '__main__':
             'rs_color_image_filepath': r['rs_color_image_filepath'],
             'zed_depth_image_filepath': r['zed_depth_image_filepath'],
             'zed_color_image_filepath': r['zed_color_image_filepath'],
-            'grip_type': grip_type,
-            'is_success': is_grip_success,
-            'description': desc
+            'grip_type': parsed_gripper_file.grip_type,
+            'is_success': parsed_gripper_file.is_grip_success,
+            'description': parsed_gripper_file.desc
         }
 
         processed_grasps.append(processed_grasp)
