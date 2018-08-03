@@ -22,6 +22,15 @@ from parsers.gripper_parser import parse_gripper_file
 from parsers.polaris_parser import parse_polaris_file
 
 
+def _extract_session_id_from_gripper_filepath(fp):
+    """Extracts session id from the directory name of gripper file
+    if directory contains -2, then session id is 1, otherwise 0
+    """
+    if '-2' in path.dirname(fp):
+        return 1
+    return 0
+
+
 # extracts grasp id from file path, filename is splitted by split
 def _grasp_id_from_filepath(split, fp):
     return int(path.basename(fp).split(split)[0])
@@ -170,9 +179,11 @@ if __name__ == '__main__':
 
             # update daily origin
             if args.update_origin:
-                # use the first timestamp in polaris recording as the timestamp of a grasp session
-                session_timestamp = parsed_gripper_file.timestamps[0]
-                polaris_coord_transformer.object_origin = daily_origins.get_origin_by_session_timestamp(session_timestamp)
+                # use the first timestamp in polaris recording as the date of a grasp session
+                session_date = pd.Timestamp(parsed_gripper_file.timestamps[0].date())
+                session_id = _extract_session_id_from_gripper_filepath(gripper_fp)
+                polaris_coord_transformer.object_origin = daily_origins\
+                    .lookup_origin_by_session_date_and_id(session_date, session_id)
 
             # transform polaris coordinates
             polaris_records = [polaris_coord_transformer.transform_single_example(t1, t2)
