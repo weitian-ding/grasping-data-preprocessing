@@ -38,7 +38,7 @@ def parse_daily_origin(filepath):
 
 
 def _build_daily_origin_lookup(daily_origin_df):
-    """Produces a session timestamp => list of of origin values
+    """Produces a (session timestamp => list of of origin values) lookup
     there can be multiple sessions during the day, the origin values measured for the same date is ordered by
     when the origin is measured during the day
 
