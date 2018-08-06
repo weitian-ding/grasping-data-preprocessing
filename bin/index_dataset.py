@@ -110,7 +110,7 @@ def _gripper_motor_records_to_interps(gripper_ts, gripper_motor_records):
     return gripper_motor_params_interps
 
 
-# save gripper, which contains both gripper motor and polaris records, to disk
+# save gripper data, which contains both gripper motor and polaris records, to disk
 def _save_gripper_data(grasp_id, gripper_df, output_folderpath):
     gripper_data_filepath = path.join(output_folderpath, 'gripper_data', '%s.csv' % grasp_id)
     if not path.exists(path.dirname(gripper_data_filepath)):
