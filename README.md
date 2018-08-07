@@ -1,14 +1,28 @@
 # grasping-data-preprocessing
 
-## terminologies
+## Terminologies
 * gripper: 
 * polaris: 
 * polaris tool1:
 * polaris tool2:
 
-## clean and index dataset
-[index_dataset.py](bin/index_dataset.py) merges gripper motor recordings and polaris recordings in each grasp, and produces and index for each grasp in the dataset.
-### parsing gripper recordings
+## Clean and index dataset
+[index_dataset.py](bin/index_dataset.py) merges and saves gripper motor recordings and polaris recordings for each grasp, and produces a record which contains the metadata for each grasp. The dataframe for all grasp trials is saved on disk in csv format. Below is a sample of the dataframe,
+
+|description|grip_type|gripper_data_filepath|id|is_success|rs_color_image_filepath|rs_depth_image_filepath|zed_color_image_filepath|zed_depth_image_filepath|
+|--- | --- | --- | --- | --- | --- | --- | --- | ---|
+"T:12...success"|12|gripper_data/352318.csv|352318|True|data-sample/25Jul2018-2 images/352318_RS_color.npy|data-sample/25Jul2018-2 images/352318_RS_depth.npy|data-sample/25Jul2018-2 images/352318_ZED_color.npy|data-sample/25Jul2018-2 images/352318_ZED_depth.npy
+"T:12...16378] "|12|gripper_data/352319.csv|352319|False|data-sample/25Jul2018-2 images/352319_RS_color.npy|data-sample/25Jul2018-2 images/352319_RS_depth.npy|data-sample/25Jul2018-2 images/352319_ZED_color.npy|data-sample/25Jul2018-2 images/352319_ZED_depth.npy
+"T:12...success"|12|gripper_data/352320.csv|352320|True|data-sample/25Jul2018-2 images/352320_RS_color.npy|data-sample/25Jul2018-2 images/352320_RS_depth.npy|data-sample/25Jul2018-2 images/352320_ZED_color.npy|data-sample/25Jul2018-2 images/352320_ZED_depth.npy
+
+There are 9 columns in the dataframe,
+* id:
+* description:
+* grip_type:
+* gripper_data_filepath:
+* is_success:
+* (rs|zed)_(color|depth)_image_filepath:
+### Parsing gripper recordings
 Gripper recordings for each grasp are written in plain text and saved on disk in a single text file. Below is an example of gripper recordings for one grasp. 
 ```
 1  2018-07-25 21:06:58.207791,15468, 14303, 17585, 15988
@@ -29,7 +43,7 @@ The following information is extracted from gripper recordings,
 * grip type: `T:[id]` (line 11) denotes the integer-ided grip type
 * description: line 10 and line 11 in the above gripper file froms the description of a grasp
 * status: a grasp is successful if `success` is indicated (line 10), failure otherwise
-### parsing polaris recordings
+### Parsing polaris recordings
 Polaris recording for each grasp is also written in plain text and saved on disk in a single text file. Below is an example of polaris recordings for one grasp.
 ```
 1  Tool 1 :C:\Program Files (x86)\Northern Digital Inc\8700449.rom
@@ -50,5 +64,6 @@ Polaris recording for each grasp is also written in plain text and saved on disk
 ```
 The following information is extracted from polaris recordings,
 * polaris parameters:
+### Merging gripper recordings and polaris recordings
 
 ## creating training dataframe
