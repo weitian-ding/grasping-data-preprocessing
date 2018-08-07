@@ -2,10 +2,10 @@ import logging
 from collections import OrderedDict
 
 import pandas as pd
-# parse the daily origin recording from Google sheets and produce an interpolation of daily origin given dates
 from tqdm import tqdm
 
 
+# parse the daily origin recording from Google sheets and produce an interpolation of daily origin given dates
 def parse_daily_origin(filepath):
     daily_origin_df = pd.read_csv(filepath, usecols=['Date', 'Time', 'X-origin', 'y-origin', 'z-origin'])
     daily_origin_df['Date'] = pd.to_datetime(daily_origin_df['Date'])
