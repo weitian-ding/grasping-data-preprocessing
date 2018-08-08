@@ -38,7 +38,8 @@ Gripper recordings for each grasp are written in plain text and saved on disk in
 11 T:12-precision disk bluelid 1-obs**Fingers at calibration = [14631, 15141, 16749, 16378]
 ```
 The following information is extracted from gripper recordings,
-* gripper motor parameters: there is one timestamp and 4 motor parameters (motor[1-4]) associated with each gripper record (e.g. line 1). motor parameters in each gripper file forms a nx4 matrix, `motor_data`, where n is the number of lines which consists of one gripper motor record. If `motor_data[i][j]` is 0, (e.g. line 3), then the value of `motor_data[i][j]` is obtained via linear interpolation between two non-zero values in j-th column of `motor_data`. 
+* gripper motor parameters: there is one timestamp and 4 motor parameters (motor[1-4]) associated with each gripper record (e.g. line 1). motor parameters in each gripper file forms a nx4 matrix, `motor_data`, where n is the number of lines which consists of one gripper motor record. If `motor_data[i][j]` is 0, (e.g. line 3), then the value of `motor_data[i][j]` is obtained via linear interpolation between first previous and first subsequent non-zero values in j-th column of `motor_data`. 
+* grasp_id: 
 * time difference: the time difference in microseconds between gripper recording and polaris recording (line 2) is extracted to synchronize gripper motor parameters and polaris parameters.
 * grip type: `T:[id]` (line 11) denotes the integer-ided grip type
 * description: line 10 and line 11 in the above gripper file froms the description of a grasp
