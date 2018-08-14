@@ -69,7 +69,8 @@ The following information is extracted from polaris recordings,
 *polaris timestamp: the timestamp of a polaris record (line 17).
 *grasp id: the unique id of a grasp trial, which is the prefix of polaris filename. 
 ### Merging gripper recordings and polaris recordings
+#### Coordinate transformation
+We transform the coordinates of the gripper so that the origin is the center of grasp platform. Polaris tool1 parameters are used if they are non-zero, otherwise tool2 parameters are used.
 #### Synchronize clocks
-We synchronize the clock generates timestamps for the gripper the clock which generates timestamps for polaris via the time difference extracted from gripper files. 
-
+We synchronize the clock that generates timestamps for the gripper and the clock which generates timestamps for polaris via the time difference between two clocks extracted from gripper files. For each polaris record, we extract the corresponding gripper motor record using spline interpolation between synchronized gripper timestamps and the known gripper records.  
 ## creating training dataframe
