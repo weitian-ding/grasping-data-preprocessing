@@ -39,13 +39,13 @@ Gripper recordings for each grasp are written in plain text and saved on disk in
 ```
 The following information is extracted from gripper recordings,
 * gripper motor parameters: there is one timestamp and 4 motor parameters (motor[1-4]) associated with each gripper record (e.g. line 1). motor parameters in each gripper file forms a nx4 matrix, `motor_data`, where n is the number of lines which consists of one gripper motor record. If `motor_data[i][j]` is 0, (e.g. line 3), then the value of `motor_data[i][j]` is obtained via linear interpolation between first previous and first subsequent non-zero values in j-th column of `motor_data`. 
-* grasp_id: 
+* grasp_id: the unique id for a grasp trial, which is the prefix of gripper filename. 
 * time difference: the time difference in microseconds between gripper recording and polaris recording (line 2) is extracted to synchronize gripper motor parameters and polaris parameters.
 * grip type: `T:[id]` (line 11) denotes the integer-ided grip type
 * description: line 10 and line 11 in the above gripper file froms the description of a grasp
 * status: a grasp is successful if `success` is indicated (line 10), failure otherwise
 ### Parsing polaris recordings
-Polaris recording for each grasp is also written in plain text and saved on disk in a single text file. Below is an example of polaris recordings for one grasp.
+For each grasp trial, we write Polaris recordings in plain text and save it on disk in a single text file. Below is an example of polaris recordings for one grasp.
 ```
 1  Tool 1 :C:\Program Files (x86)\Northern Digital Inc\8700449.rom
 2  Tool 2 :C:\Program Files (x86)\Northern Digital Inc\8700339.rom
@@ -64,7 +64,12 @@ Polaris recording for each grasp is also written in plain text and saved on disk
 ...
 ```
 The following information is extracted from polaris recordings,
-* polaris parameters:
+*polaris tool1/tool449 parameters: 7 parameters (x, y, z, q0, qx, qy, qz) (line 17). (x, y, z) is the coordinates of tool1 with respect to polaris, (q0, qx, qy, qz) is the quaternion to transfrom (x, y, z) to (x', y', z') so that the origin is the center of grasp platform. 
+*polaris tool2/tool339 parameters: 7 parameters (x, y, z, q0, qx, qy, qz) (line 17). (x, y, z) is the coordinates of tool2 with respect to polaris, (q0, qx, qy, qz) is the quaternion to transfrom (x, y, z) to (x', y', z') so that the origin is the center of grasp platform. 
+*polaris timestamp: the timestamp of a polaris record (line 17).
+*grasp id: the unique id of a grasp trial, which is the prefix of polaris filename. 
 ### Merging gripper recordings and polaris recordings
+#### Synchronize clocks
+We synchronize the clock generates timestamps for the gripper the clock which generates timestamps for polaris via the time difference extracted from gripper files. 
 
 ## creating training dataframe
